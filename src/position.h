@@ -198,7 +198,6 @@ class Position {
     int        gamePly;
     Color      sideToMove;
     bool       chess960;
-    int        gamePhase;
 };
 
 constexpr std::array<int, 6> PhaseIncrements = {0, 1, 1, 2, 4, 0};
@@ -313,9 +312,7 @@ inline int Position::game_phase() const {
     int      phase = 0;
     Bitboard pcs = pieces();
     while (pcs)
-    {
         phase += PhaseIncrements[type_of(board[pop_lsb(pcs)]) - 1];
-    }
     return phase;
 }
 
@@ -345,7 +342,6 @@ inline void Position::put_piece(Piece pc, Square s) {
     byColorBB[color_of(pc)] |= s;
     pieceCount[pc]++;
     pieceCount[make_piece(color_of(pc), ALL_PIECES)]++;
-    gamePhase += PhaseIncrements[type_of(pc)];
 }
 
 inline void Position::remove_piece(Square s) {
@@ -357,7 +353,6 @@ inline void Position::remove_piece(Square s) {
     board[s] = NO_PIECE;
     pieceCount[pc]--;
     pieceCount[make_piece(color_of(pc), ALL_PIECES)]--;
-    gamePhase -= PhaseIncrements[type_of(pc)];
 }
 
 inline void Position::move_piece(Square from, Square to) {

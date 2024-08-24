@@ -284,8 +284,6 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si) {
     // handle also common incorrect FEN with fullmove = 0.
     gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
 
-    gamePhase = 0;
-
     chess960 = isChess960;
     set_state();
 
