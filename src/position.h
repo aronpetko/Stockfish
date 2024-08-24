@@ -338,6 +338,7 @@ inline void Position::put_piece(Piece pc, Square s) {
     pieceCount[pc]++;
     pieceCount[make_piece(color_of(pc), ALL_PIECES)]++;
     gamePhase += PhaseIncrements[type_of(pc) - 1];
+    std::cout << gamePhase << std::endl;
 }
 
 inline void Position::remove_piece(Square s) {
