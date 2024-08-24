@@ -777,7 +777,6 @@ Value Search::Worker::search(
 
         // Null move dynamic reduction based on depth, eval, and phase
         Depth R = std::min(int(eval - beta) / 202, 6) + depth / 3 + std::min(pos.game_phase(), 24) / 9 + 4;
-        std::cout << pos.game_phase() << std::endl;
 
         ss->currentMove         = Move::null();
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
