@@ -309,7 +309,15 @@ inline Value Position::non_pawn_material() const {
 
 inline int Position::game_ply() const { return gamePly; }
 
-inline int Position::game_phase() const { return gamePhase; }
+inline int Position::game_phase() const {
+    int      phase = 0;
+    Bitboard pcs = pieces();
+    while (pcs)
+    {
+        phase += PhaseIncrements[type_of(board[pop_lsb(pcs)])];
+    }
+    return phase;
+}
 
 inline int Position::rule50_count() const { return st->rule50; }
 
@@ -338,7 +346,6 @@ inline void Position::put_piece(Piece pc, Square s) {
     pieceCount[pc]++;
     pieceCount[make_piece(color_of(pc), ALL_PIECES)]++;
     gamePhase += PhaseIncrements[type_of(pc)];
-    std::cout << (int)type_of(pc) << std::endl;
 }
 
 inline void Position::remove_piece(Square s) {
