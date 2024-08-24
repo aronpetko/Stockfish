@@ -201,7 +201,7 @@ class Position {
     int        gamePhase;
 };
 
-constexpr std::array<int, 7> PhaseIncrements = {0, 1, 1, 2, 4, 0};
+constexpr std::array<int, 6> PhaseIncrements = {0, 1, 1, 2, 4, 0};
 
 std::ostream& operator<<(std::ostream& os, const Position& pos);
 
