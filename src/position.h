@@ -316,6 +316,7 @@ inline int Position::game_phase() const {
     {
         phase += PhaseIncrements[type_of(board[pop_lsb(pcs)]) - 1];
     }
+    std::cout << phase << std::endl;
     return phase;
 }
 
