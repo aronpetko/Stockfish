@@ -765,7 +765,11 @@ Value Search::Worker::search(
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
-        return beta + (eval - beta) / 3;
+    {
+        const auto capturedPiece = pos.piece_on(move.to_sq());
+        const Value fpEval = ttCapture && eval == ss->staticEval ? eval - PieceValue[capturedPiece] : eval;
+        return beta + (fpEval - beta) / 3;
+    }
 
     // Step 9. Null move search with verification search (~35 Elo)
     if (cutNode && (ss - 1)->currentMove != Move::null() && (ss - 1)->statScore < 14389
