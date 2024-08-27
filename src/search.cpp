@@ -766,8 +766,12 @@ Value Search::Worker::search(
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
     {
-        const auto capturedPiece = pos.piece_on(move.to_sq());
-        const Value fpEval = ttCapture && eval == ss->staticEval ? eval - PieceValue[capturedPiece] : eval;
+        Value fpEval = eval;
+        if (ttData.move && ttCapture && eval == ss->staticEval)
+        {
+            const auto capturedPiece = pos.piece_on(ttData.move.to_sq());
+            fpEval = eval - PieceValue[capturedPiece];
+        }
         return beta + (fpEval - beta) / 3;
     }
 
