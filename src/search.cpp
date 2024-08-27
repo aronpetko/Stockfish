@@ -767,10 +767,10 @@ Value Search::Worker::search(
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
     {
         Value fpEval = eval;
-        if (ttData.move && ttCapture && eval == ss->staticEval)
+        if (ttCapture && eval == ss->staticEval && pos.see_ge(ttData.move, 1))
         {
             const auto capturedPiece = pos.piece_on(ttData.move.to_sq());
-            fpEval = eval + PieceValue[capturedPiece];
+            fpEval = eval + PieceValue[capturedPiece] / 2;
         }
         return beta + (fpEval - beta) / 3;
     }
