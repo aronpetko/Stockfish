@@ -770,7 +770,7 @@ Value Search::Worker::search(
         if (ttData.move && ttCapture && eval == ss->staticEval)
         {
             const auto capturedPiece = pos.piece_on(ttData.move.to_sq());
-            fpEval = eval - PieceValue[capturedPiece];
+            fpEval = eval + PieceValue[capturedPiece];
         }
         return beta + (fpEval - beta) / 3;
     }
