@@ -835,6 +835,8 @@ Value Search::Worker::search(
         }
     }
 
+    cutNode |= eval >= beta + 100;
+
     // Step 10. Internal iterative reductions (~9 Elo)
     // For PV nodes without a ttMove, we decrease depth.
     if (PvNode && !ttData.move)
