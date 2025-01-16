@@ -1160,7 +1160,8 @@ moves_loop:  // When in check, search starts here
 
         r += 330;
 
-        r -= std::abs(correctionValue) / 32768;
+        if (!ss->inCheck)
+            r -= std::abs(correctionValue) / 32768;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
