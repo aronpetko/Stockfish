@@ -1705,7 +1705,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (pos.capture_stage(bestMove))
+    if (pos.capture_stage(bestMove) && bestMove != ttData.move)
         qsearch_update_cont_hist(pos, ss, *this, bestMove, quietsSearched);
 
     if (!is_decisive(bestValue) && bestValue >= beta)
