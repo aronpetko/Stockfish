@@ -1812,12 +1812,15 @@ void qsearch_update_cont_hist(const Position&      pos,
     const int bonus = stat_bonus(1);
     const int malus = stat_malus(1);
 
-    // Increase stats for the best move
-    update_continuation_histories(ss, pos.moved_piece(bestMove), bestMove.to_sq(), bonus * 512 / 1024);
+    if (((ss - 1)->currentMove).is_ok())
+    {
+        // Increase stats for the best move
+        (*(ss - 1)->continuationHistory)[pos.moved_piece(bestMove)][bestMove.to_sq()] << bonus * 512 / 1024;
 
-    // Decrease stats for all non-best capture moves
-    for (Move move : quietsSearched)
-        update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), -malus * 512 / 1024);
+        // Decrease stats for all non-best capture moves
+        for (Move move : quietsSearched)
+            (*(ss - 1)->continuationHistory)[pos.moved_piece(move)][move.to_sq()] << -malus * 512 / 1024;
+    }
 }
 
 // Updates stats at the end of search() when a bestMove is found
