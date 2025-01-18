@@ -121,6 +121,10 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove);
+void qsearch_update_capture_history(const Position&      pos,
+                                    Search::Worker&      workerThread,
+                                    Move                 bestMove,
+                                    ValueList<Move, 32>& capturesSearched);
 
 }  // namespace
 
@@ -1585,6 +1589,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
 
+    ValueList<Move, 32> capturesSearched;
+
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
@@ -1684,6 +1690,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     break;  // Fail high
             }
         }
+
+        if (capture && move != bestMove)
+            capturesSearched.push_back(move);
     }
 
     // Step 9. Check for mate
@@ -1694,6 +1703,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         assert(!MoveList<LEGAL>(pos).size());
         return mated_in(ss->ply);  // Plies to mate from the root
     }
+
+    if (pos.capture_stage(bestMove))
+        qsearch_update_capture_history(pos, *this, bestMove, capturesSearched);
 
     if (!is_decisive(bestValue) && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
@@ -1790,6 +1802,29 @@ void update_pv(Move* pv, Move move, const Move* childPv) {
     *pv = Move::none();
 }
 
+// Updates capture history at the end of qsearch() when a bestMove is found
+void qsearch_update_capture_history(const Position&      pos,
+                                    Search::Worker&      workerThread,
+                                    Move                 bestMove,
+                                    ValueList<Move, 32>& capturesSearched) {
+    CapturePieceToHistory& captureHistory = workerThread.captureHistory;
+    Piece                  moved_piece    = pos.moved_piece(bestMove);
+    PieceType              captured       = type_of(pos.piece_on(bestMove.to_sq()));
+
+    const int bonus = stat_bonus(1);
+    const int malus = stat_malus(1);
+
+    // Increase stats for the best move
+    captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 1272 / 1024;
+
+    // Decrease stats for all non-best capture moves
+    for (Move move : capturesSearched)
+    {
+        moved_piece = pos.moved_piece(move);
+        captured    = type_of(pos.piece_on(move.to_sq()));
+        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 1205 / 1024;
+    }
+}
 
 // Updates stats at the end of search() when a bestMove is found
 void update_all_stats(const Position&      pos,
