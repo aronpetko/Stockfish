@@ -1815,14 +1815,14 @@ void qsearch_update_capture_history(const Position&      pos,
     const int malus = stat_malus(1);
 
     // Increase stats for the best move
-    captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 1272 / 1024;
+    captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 1024 / 1024;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 1205 / 1024;
+        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 1024 / 1024;
     }
 }
 
