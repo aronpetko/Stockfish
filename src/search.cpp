@@ -121,10 +121,11 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove);
-void qsearch_update_capture_history(const Position&      pos,
-                                    Search::Worker&      workerThread,
-                                    Move                 bestMove,
-                                    ValueList<Move, 32>& capturesSearched);
+void qsearch_update_cont_hist(const Position&      pos,
+                              Stack*               ss,
+                              Search::Worker&      workerThread,
+                              Move                 bestMove,
+                              ValueList<Move, 32>& quietsSearched);
 
 }  // namespace
 
@@ -1589,7 +1590,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
 
-    ValueList<Move, 32> capturesSearched;
+    ValueList<Move, 32> quietsSearched;
 
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
@@ -1691,8 +1692,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             }
         }
 
-        if (capture && move != bestMove)
-            capturesSearched.push_back(move);
+        if (move != bestMove)
+            quietsSearched.push_back(move);
     }
 
     // Step 9. Check for mate
@@ -1705,7 +1706,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if (pos.capture_stage(bestMove))
-        qsearch_update_capture_history(pos, *this, bestMove, capturesSearched);
+        qsearch_update_cont_hist(pos, ss, *this, bestMove, quietsSearched);
 
     if (!is_decisive(bestValue) && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
@@ -1803,27 +1804,20 @@ void update_pv(Move* pv, Move move, const Move* childPv) {
 }
 
 // Updates capture history at the end of qsearch() when a bestMove is found
-void qsearch_update_capture_history(const Position&      pos,
-                                    Search::Worker&      workerThread,
-                                    Move                 bestMove,
-                                    ValueList<Move, 32>& capturesSearched) {
-    CapturePieceToHistory& captureHistory = workerThread.captureHistory;
-    Piece                  moved_piece    = pos.moved_piece(bestMove);
-    PieceType              captured       = type_of(pos.piece_on(bestMove.to_sq()));
-
+void qsearch_update_cont_hist(const Position&      pos,
+                              Stack*               ss,
+                              Search::Worker&      workerThread,
+                              Move                 bestMove,
+                              ValueList<Move, 32>& quietsSearched) {
     const int bonus = stat_bonus(1);
     const int malus = stat_malus(1);
 
     // Increase stats for the best move
-    captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 1024 / 1024;
+    update_continuation_histories(ss, pos.moved_piece(bestMove), bestMove.to_sq(), bonus * 512 / 1024);
 
     // Decrease stats for all non-best capture moves
-    for (Move move : capturesSearched)
-    {
-        moved_piece = pos.moved_piece(move);
-        captured    = type_of(pos.piece_on(move.to_sq()));
-        captureHistory[moved_piece][move.to_sq()][captured] << -malus * 1024 / 1024;
-    }
+    for (Move move : quietsSearched)
+        update_continuation_histories(ss, pos.moved_piece(move), move.to_sq(), -malus * 512 / 1024);
 }
 
 // Updates stats at the end of search() when a bestMove is found
