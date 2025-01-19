@@ -157,6 +157,10 @@ class Position {
     Key major_piece_key() const;
     Key minor_piece_key() const;
     Key non_pawn_key(Color c) const;
+    
+    // Hash 50mr to key utility
+    template<bool AfterMove>
+    Key adjust_key50(Key k) const;
 
     // Other properties of the position
     Color side_to_move() const;
@@ -189,8 +193,6 @@ class Position {
     void move_piece(Square from, Square to);
     template<bool Do>
     void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
-    template<bool AfterMove>
-    Key adjust_key50(Key k) const;
 
     // Data members
     Piece      board[SQUARE_NB];
