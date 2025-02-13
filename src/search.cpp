@@ -1017,6 +1017,7 @@ moves_loop:  // When in check, search starts here
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
+            int fractionalLmrDepth = newDepth * 1024 - r;
 
             if (capture || givesCheck)
             {
@@ -1027,7 +1028,7 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    Value futilityValue = ss->staticEval + 242 + 238 * lmrDepth
+                    Value futilityValue = ss->staticEval + 242 + 238 * fractionalLmrDepth / 1024
                                         + PieceValue[capturedPiece] + 95 * captHist / 700;
                     if (futilityValue <= alpha)
                         continue;
@@ -1052,8 +1053,9 @@ moves_loop:  // When in check, search starts here
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
                 lmrDepth += history / 3576;
+                fractionalDepth += history * 1024 / 3576;
 
-                Value futilityValue = ss->staticEval + (bestMove ? 49 : 135) + 150 * lmrDepth;
+                Value futilityValue = ss->staticEval + (bestMove ? 49 : 135) + 150 * fractionalLmrDepth / 1024;
 
                 // Futility pruning: parent node
                 if (!ss->inCheck && lmrDepth < 12 && futilityValue <= alpha)
