@@ -1053,7 +1053,7 @@ moves_loop:  // When in check, search starts here
                 history += 68 * thisThread->mainHistory[us][move.from_to()] / 32;
 
                 lmrDepth += history / 3576;
-                fractionalDepth += history * 1024 / 3576;
+                fractionalLmrDepth += history * 1024 / 3576;
 
                 Value futilityValue = ss->staticEval + (bestMove ? 49 : 135) + 150 * fractionalLmrDepth / 1024;
 
