@@ -993,7 +993,7 @@ moves_loop:  // When in check, search starts here
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
-            int fractionalLmrDepth = new_depth * 1024 - r;
+            int fractionalLmrDepth = newDepth * 1024 - r;
 
             if (capture || givesCheck)
             {
