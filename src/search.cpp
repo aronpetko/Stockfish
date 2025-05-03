@@ -73,22 +73,22 @@ namespace {
 // Futility margin
 Value futility_margin(Depth d,
                       bool  noTtCutNode,
-                      bool  improving,
+                      bool  ss->improving,
                       bool  oppWorsening,
                       int   statScore,
                       int   correctionValue) {
     Value futilityMult       = 105 - 23 * noTtCutNode;
-    Value improvingDeduction = improving * futilityMult * 2;
+    Value ss->improvingDeduction = ss->improving * futilityMult * 2;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
     Value statScoreAddition  = statScore / 335;
     Value correctionAddition = correctionValue / 149902;
 
-    return futilityMult * d - improvingDeduction - worseningDeduction + statScoreAddition
+    return futilityMult * d - ss->improvingDeduction - worseningDeduction + statScoreAddition
          + correctionAddition;
 }
 
-constexpr int futility_move_count(bool improving, Depth depth) {
-    return (3 + depth * depth) / (2 - improving);
+constexpr int futility_move_count(bool ss->improving, Depth depth) {
+    return (3 + depth * depth) / (2 - ss->improving);
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
@@ -644,7 +644,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -800,7 +800,7 @@ Value Search::Worker::search(
     {
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
-        improving             = false;
+        ss->improving             = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -843,15 +843,15 @@ Value Search::Worker::search(
               << bonus * 1266 / 1024;
     }
 
-    // Set up the improving flag, which is true if current static evaluation is
+    // Set up the ss->improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
-    // false otherwise. The improving flag is used in various pruning heuristics.
-    improving = ss->staticEval > (ss - 2)->staticEval;
+    // false otherwise. The ss->improving flag is used in various pruning heuristics.
+    ss->improving = ss->staticEval > (ss - 2)->staticEval;
 
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    if (priorReduction >= 3 && !opponentWorsening && !(ss - 1)->improving)
         depth++;
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 175)
         depth--;
@@ -866,7 +866,7 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
         && eval
-               - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening,
+               - futility_margin(depth, cutNode && !ss->ttHit, ss->improving, opponentWorsening,
                                  (ss - 1)->statScore, std::abs(correctionValue))
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
@@ -913,7 +913,7 @@ Value Search::Worker::search(
         }
     }
 
-    improving |= ss->staticEval >= beta + 94;
+    ss->improving |= ss->staticEval >= beta + 94;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
@@ -924,7 +924,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 201 - 58 * improving;
+    probCutBeta = beta + 201 - 58 * ss->improving;
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -1041,7 +1041,7 @@ moves_loop:  // When in check, search starts here
 
         int delta = beta - alpha;
 
-        Depth r = reduction(improving, depth, moveCount, delta);
+        Depth r = reduction(ss->improving, depth, moveCount, delta);
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Smaller or even negative value is better for short time controls
@@ -1054,7 +1054,7 @@ moves_loop:  // When in check, search starts here
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-            if (moveCount >= futility_move_count(improving, depth))
+            if (moveCount >= futility_move_count(ss->improving, depth))
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
