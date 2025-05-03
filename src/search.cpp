@@ -73,17 +73,17 @@ namespace {
 // Futility margin
 Value futility_margin(Depth d,
                       bool  noTtCutNode,
-                      bool  ss->improving,
+                      bool  improving,
                       bool  oppWorsening,
                       int   statScore,
                       int   correctionValue) {
     Value futilityMult       = 105 - 23 * noTtCutNode;
-    Value ss->improvingDeduction = ss->improving * futilityMult * 2;
+    Value improvingDeduction = improving * futilityMult * 2;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
     Value statScoreAddition  = statScore / 335;
     Value correctionAddition = correctionValue / 149902;
 
-    return futilityMult * d - ss->improvingDeduction - worseningDeduction + statScoreAddition
+    return futilityMult * d - improvingDeduction - worseningDeduction + statScoreAddition
          + correctionAddition;
 }
 
