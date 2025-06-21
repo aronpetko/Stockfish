@@ -972,6 +972,7 @@ moves_loop:  // When in check, search starts here
                   &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
 
     value = bestValue;
+    ss->singularBestMove = Move::none();
 
     int moveCount = 0;
 
