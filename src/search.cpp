@@ -1168,7 +1168,8 @@ moves_loop:  // When in check, search starts here
             // over current beta
             else if (cutNode)
                 extension = -2;
-        }
+        } else if (move == ss->singularBestMove)
+            extension = 1;
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck);
@@ -1457,6 +1458,9 @@ moves_loop:  // When in check, search starts here
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)] << 1080;
     }
+
+    if (excludedMove && bestValue >= beta + 20)
+        ss->singularBestMove = move;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
