@@ -845,12 +845,12 @@ Value Search::Worker::search(
                  - improving * futilityMult * 2          //
                  - opponentWorsening * futilityMult / 3  //
                  + (ss - 1)->statScore / 376             //
-                 + std::abs(correctionValue) / 168639;
+                 + std::abs(correctionValue) / 168639    //
+                 + usingTTScore * (10 * std::max(0, ttData.depth - depth));
         };
 
         if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
-            && (!ttData.move || ttCapture || (usingTTScore && (ttData.bound & BOUND_LOWER)))
-            && !is_loss(beta) && !is_win(eval))
+            && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
             return beta + (eval - beta) / 3;
     }
 
