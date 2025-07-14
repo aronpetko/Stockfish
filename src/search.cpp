@@ -772,6 +772,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    bool       usingTTScore         = false;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -793,7 +794,7 @@ Value Search::Worker::search(
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
-            eval = ttData.value;
+            eval = ttData.value, usingTTScore = true;
     }
     else
     {
@@ -848,7 +849,8 @@ Value Search::Worker::search(
         };
 
         if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
-            && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
+            && (!ttData.move || ttCapture || (usingTTScore && (ttData.bound & BOUND_LOWER)))
+            && !is_loss(beta) && !is_win(eval))
             return beta + (eval - beta) / 3;
     }
 
