@@ -846,7 +846,7 @@ Value Search::Worker::search(
                  - opponentWorsening * futilityMult / 3  //
                  + (ss - 1)->statScore / 376             //
                  + std::abs(correctionValue) / 168639    //
-                 + usingTTScore * (10 * std::max(0, ttData.depth - depth));
+                 - usingTTScore * (10 * std::max(0, ttData.depth - depth));
         };
 
         if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
