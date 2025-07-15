@@ -692,6 +692,12 @@ Value Search::Worker::search(
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -2301);
         }
+        // Bonus for prior quiet countermove that caused the fail low
+        else if (ttData.value <= alpha && !priorCapture && prevSq != SQ_NONE)
+        {
+            thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+              << std::min(125 * depth - 77, 1157);
+        }
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
