@@ -775,7 +775,7 @@ Value Search::Worker::search(
     if (ss->inCheck)
     {
         // Skip early pruning when in check
-        ss->staticEval = eval = (ss - 2)->staticEval;
+        ss->staticEval = eval = qsearch<nodeType>(pos, ss, alpha, beta);
         improving             = false;
         goto moves_loop;
     }
@@ -1502,8 +1502,7 @@ moves_loop:  // When in check, search starts here
 template<NodeType nodeType>
 Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta) {
 
-    static_assert(nodeType != Root);
-    constexpr bool PvNode = nodeType == PV;
+    constexpr bool PvNode = nodeType != NonPV;
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
