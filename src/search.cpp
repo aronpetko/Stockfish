@@ -712,7 +712,7 @@ Value Search::Worker::search(
                 if (is_valid(ttData.eval) && !ss->inCheck
                     && !(ttData.move && pos.capture(ttData.move))
                     && ((ttData.value < ttData.eval
-                         && bestValue < beta)  // negative correction & no fail high
+                         && ttData.value < beta)  // negative correction & no fail high
                         || (ttData.value > ttData.eval
                             && ttData.move)))  // positive correction & no fail low
                 {
