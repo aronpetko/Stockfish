@@ -707,7 +707,23 @@ Value Search::Worker::search(
                     return ttData.value;
             }
             else
+            {
+                // Adjust correction history on TT cutoffs
+                if (is_valid(ttData.eval) && !ss->inCheck
+                    && !(ttData.move && pos.capture(ttData.move))
+                    && ((ttData.value < ttData.eval
+                         && bestValue < beta)  // negative correction & no fail high
+                        || (ttData.value > ttData.eval
+                            && ttData.move)))  // positive correction & no fail low
+                {
+                    auto bonus =
+                      std::clamp(int(ttData.value - ttData.eval) * depth / 8,
+                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
+                    update_correction_history(pos, ss, *this, bonus);
+                }
+
                 return ttData.value;
+            }
         }
     }
 
