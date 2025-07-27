@@ -1028,6 +1028,7 @@ moves_loop:  // When in check, search starts here
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
+            int fractionalLmrDepth = newDepth - r;
             int lmrDepth = newDepth - r / 1024;
 
             if (capture || givesCheck)
@@ -1038,7 +1039,7 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
+                    Value futilityValue = ss->staticEval + 232 + 224 * fractionalLmrDepth / 1024
                                         + PieceValue[capturedPiece] + 131 * captHist / 1024;
                     if (futilityValue <= alpha)
                         continue;
