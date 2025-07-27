@@ -1028,7 +1028,7 @@ moves_loop:  // When in check, search starts here
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
-            int fractionalLmrDepth = newDepth - r;
+            int fractionalLmrDepth = newDepth * 1024 - r;
             int lmrDepth = newDepth - r / 1024;
 
             if (capture || givesCheck)
