@@ -902,7 +902,10 @@ Value Search::Worker::search(
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
         // probCut there
-        && !(is_valid(ttData.value) && ttData.value < probCutBeta))
+        && !(is_valid(ttData.value) && ttData.value < probCutBeta)
+        && (!ttData.move
+            || pawnHistory[pawn_structure_index(pos)][pos.moved_piece(ttData.move)][move.to_sq()]
+                 > 5000))
     {
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
