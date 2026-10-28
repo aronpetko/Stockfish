@@ -1566,10 +1566,6 @@ moves_loop:  // When in check, search starts here
                     break;
                 }
 
-                // Reduce other moves if we have found at least one score improvement
-                if (depth > 3 && depth < 12 && !is_decisive(value))
-                    depth -= 3;
-
                 assert(depth > 0);
                 alpha = value;  // Update alpha! Always alpha < beta
             }
