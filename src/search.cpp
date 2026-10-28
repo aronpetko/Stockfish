@@ -1149,7 +1149,7 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int moveCount = 0, alphaRaiseCount = 0;
 
     // Step 14. Loop through all legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1393,6 +1393,9 @@ moves_loop:  // When in check, search starts here
         if (seekMate && r > 0)
             r += (givesCheck ? -r : r) / 4;
 
+        // Increase reduction if alpha has been raised
+        r += 384 * alphaRaiseCount;
+
         // Apply the computed LMR
         if (depth >= 2 && moveCount > 1)
         {
@@ -1532,6 +1535,7 @@ moves_loop:  // When in check, search starts here
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !pvIdx)
                     ++bestMoveChanges;
+                ++alphaRaiseCount;
             }
             else
                 // All other moves but the PV are set to the lowest value: this
@@ -1565,10 +1569,6 @@ moves_loop:  // When in check, search starts here
                     assert(value >= beta);  // Fail high
                     break;
                 }
-
-                // Reduce other moves if we have found at least one score improvement
-                if (depth > 3 && depth < 12 && !is_decisive(value))
-                    depth -= 3;
 
                 assert(depth > 0);
                 alpha = value;  // Update alpha! Always alpha < beta
